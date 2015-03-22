@@ -25,6 +25,15 @@ Dependencies
 [![Build Status](https://travis-ci.org/owagner/kodi2mqtt.svg)](https://travis-ci.org/owagner/kodi2mqtt) Automatically built addons can be downloaded from the release page on GitHub at https://github.com/owagner/kodi2mqtt/releases
 
 
+Settings
+--------
+The addon has three settings:
+
+* the MQTT broker's IP address (defaults to 127.0.0.1)
+* the MQTT broker's port. This defaults to 1883, which is standard.
+* the topic prefix which to use in all published and subscribed topics. Defaults to "kodi/".
+
+
 Topics
 ------
 The addon publishes on the following topics:
