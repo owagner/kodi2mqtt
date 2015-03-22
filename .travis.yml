@@ -1,3 +1,7 @@
+language: python
+
+script: "echo Nothing to do"
+
 before_deploy: "zip -r kodi2mqtt_addon.zip service.mqtt"
 
 deploy:
