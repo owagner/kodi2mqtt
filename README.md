@@ -30,13 +30,13 @@ Settings
 The addon has three settings:
 
 * the MQTT broker's IP address (defaults to 127.0.0.1)
-* the MQTT broker's port. This defaults to 1883, which is standard.
+* the MQTT broker's port. This defaults to 1883, which is the MQTT standard port for unencrypted connections.
 * the topic prefix which to use in all published and subscribed topics. Defaults to "kodi/".
 
 
 Topics
 ------
-The addon publishes on the following topics:
+The addon publishes on the following topics (prefixed with the configured topic prefix):
 
 * connected: 2 if the addon is currently connected to the broker, 0 otherwise. This topic is set to 0 with a MQTT will.
 * status/playbackstate: a JSON-encoded object with the fields
@@ -52,10 +52,24 @@ The addon publishes on the following topics:
   - "val": the title of the current playback item
   - "kodi_details": an object with further details about the current playback items. This is effectivly the result
     of a JSON-RPC call Player.GetItem with the properties "title", "streamdetails" and "file"
-    
-  
+
+The addon listens to the following topics (prefixed with the configured topic prefix):
+
+* command/notify: Either a simple string, or a JSON encoded object with the fields "message" and "title". Shows 
+  a popup notification in Kodi
+* command/play: Either a simple string which is a filename or URL, or a JSON encoded object which  correspondents
+  to the Player.Open() JSON_RPC call
+* command/playbackstate: A simple string or numeric with the values:
+  - "0" or "stop" to stop playback
+  - "1" or "resume" to resume playback (when paused)
+  - "2" or "pause" to stop playback (when playing)
+  - "next" to play the next track
+  - "previous" to play the previous track
+
+
 See also
 --------
+- JSON-RPC API v6 in Kodi: http://kodi.wiki/view/JSON-RPC_API/v6
 - Project overview: https://github.com/mqtt-smarthome
   
   

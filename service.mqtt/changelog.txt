@@ -1,3 +1,9 @@
+V0.3 - 2015-03-22 - owagner
+  - fixed division by zero when switching TV channels
+  - now supports command/notify to send notifications
+  - now supports command/play to start playback of files or items
+  - now supports command/playbackstate to control the playback state
+  
 V0.2 - 2015-03-22 - owagner
   - refactored as a Kodi addon
   
