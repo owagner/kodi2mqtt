@@ -1,0 +1,9 @@
+before_deploy: "zip -r kodi2mqtt_addon.zip service.mqtt"
+
+deploy:
+  provider: releases
+  api_key:
+    secure: ngx8lgauODj+3ZHPb062piIHYfGwY3DHrbiEPMH87VYBzvUbRJo/JSVJn/JllULCGDHOXITb79D9dbLcpFW+j23abXmd86dfHeVPUFlhgH+VBXtNjmMV5jWdEDYmCIsVORf+dWq4Z5pQjX9GtCpVOUb9wfMF6mRdIgioWj0TsCM=
+  file: kodi2mqtt_addon.zip
+  on:
+    repo: owagner/kodi2mqtt
