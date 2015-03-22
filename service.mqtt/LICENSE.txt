@@ -1,3 +1,5 @@
+The kodi2mqtt addon is licensed under the terms of the MIT license:
+
 The MIT License (MIT)
 
 Copyright (c) 2015 Oliver Wagner
@@ -20,3 +22,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+---------------------------------------------------------------------
+
+For the included Eclipse Paho MQTT library:
+
+This project is dual licensed under the Eclipse Public License 1.0 and the
+Eclipse Distribution License 1.0 as described in the epl-v10 and edl-v10 files.
