@@ -9,5 +9,9 @@ deploy:
   api_key:
     secure: ngx8lgauODj+3ZHPb062piIHYfGwY3DHrbiEPMH87VYBzvUbRJo/JSVJn/JllULCGDHOXITb79D9dbLcpFW+j23abXmd86dfHeVPUFlhgH+VBXtNjmMV5jWdEDYmCIsVORf+dWq4Z5pQjX9GtCpVOUb9wfMF6mRdIgioWj0TsCM=
   file: kodi2mqtt_addon.zip
+  skip_cleanup: true
   on:
     repo: owagner/kodi2mqtt
+    tags: true
+    all_branches: true
+
