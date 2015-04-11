@@ -3,11 +3,25 @@
 
 import xbmc,xbmcaddon
 import json
+import threading
+import time
 from lib import client as mqtt
 
 __addon__      = xbmcaddon.Addon()
 __version__    = __addon__.getAddonInfo('version')
 
+activeplayerid=-1
+
+def sendrpc(method,params):
+    res=xbmc.executeJSONRPC(json.dumps({"jsonrpc":"2.0","method":method,"params":params,"id":1}))
+    xbmc.log("MQTT: JSON-RPC call "+method+" returned "+res)
+    return json.loads(res)
+
+#
+# Publishes a MQTT message. The topic is built from the configured
+# topic prefix and the suffix. The message itself is JSON encoded,
+# with the "val" field set, and possibly more fields merged in.
+#
 def publish(suffix,val,more):
     global topic,mqc
     robj={}
@@ -19,25 +33,56 @@ def publish(suffix,val,more):
     xbmc.log("MQTT: Publishing @"+fulltopic+": "+jsonstr)
     mqc.publish(fulltopic,jsonstr,qos=0,retain=True)
 
-def setplaystate(state):
-    publish("playbackstate",state,None)
-    
-def publishdetails():
-    global player
-    if not player.isPlayer():
-        return
-    state={}
-    state["file"]=player.getPlayingFile()
-    if player.isPlayingVideo():
-        it=player.getVideoInfoTag()
-        title=it.getTitle()
-        state["file"]=it.getFile()
-    elif player.isPlayingAudio():
-        it=player.getMusicInfoTag()
-        title=it.getTitle()
-        state["file"]=it.getFile()
-    publish("title",title,{"kodi_details":state})
+#
+# Set and publishes the playback state. Publishes more info if
+# the state is "playing"
+#
+def setplaystate(state,detail):
+    global activeplayerid
+    if state==1:
+        res=sendrpc("Player.GetActivePlayers",{})
+        activeplayerid=res["result"][0]["playerid"]        
+        res=sendrpc("Player.GetProperties",{"playerid":activeplayerid,"properties":["speed","currentsubtitle","currentaudiostream","repeat","subtitleenabled"]})
+        publish("playbackstate",state,{"kodi_state":detail,"kodi_playbackdetails":res["result"]})
+        publishdetails()
+    else:
+        publish("playbackstate",state,{"kodi_state":detail})
 
+def convtime(ts):
+    return("%02d:%02d:%02d" % (ts/3600,(ts/60)%60,ts%60))
+
+#
+# Publishes playback progress
+#
+def publishprogress():
+    global player
+    if not player.isPlaying():
+        return
+    pt=player.getTime()
+    tt=player.getTotalTime()
+    if pt<0:
+        pt=0
+    if tt>0:
+        progress=(pt*100)/tt
+    else:
+        progress=0
+    state={"kodi_time":convtime(pt),"kodi_totaltime":convtime(tt)}
+    publish("progress",round(progress,1),state)
+
+#
+# Publish more details about the currently playing item
+#
+def publishdetails():
+    global player,activeplayerid
+    if not player.isPlaying():
+        return
+    res=sendrpc("Player.GetItem",{"playerid":activeplayerid,"properties":["title","streamdetails","file"]})
+    publish("title",res["result"]["item"]["title"],{"kodi_details":res["result"]["item"]})
+    publishprogress()
+
+#
+# Notification subclasses
+#
 class MQTTMonitor(xbmc.Monitor):
     def onSettingsChanged(self):
         global mqc
@@ -47,20 +92,80 @@ class MQTTMonitor(xbmc.Monitor):
 
 class MQTTPlayer(xbmc.Player):
     def onPlayBackStarted(self):
-        setplaystate(1)
+        setplaystate(1,"started")
 
     def onPlayBackPaused(self):
-        setplaystate(2)
+        setplaystate(2,"paused")
 
     def onPlayBackResumed(self):
-        setplaystate(1)
+        setplaystate(1,"resumed")
 
     def onPlayBackEnded(self):
-        setplaystate(0)
+        setplaystate(0,"ended")
         
     def onPlayBackStopped(self):
-        setplaystate(0)
+        setplaystate(0,"stopped")
         
+    def onPlayBackSeek(self):
+        publishprogress()
+        
+    def onPlayBackSeek(self):
+        publishprogress()
+        
+    def onPlayBackSeekChapter(self):
+        publishprogress()
+    
+    def onPlayBackSpeedChanged(speed):
+        setplaystate(1,"speed")
+        
+    def onQueueNextItem():
+        xbmc.log("MQTT onqn");
+
+#
+# Handles commands
+#
+def processnotify(data):
+    try:
+        params=json.loads(data)
+    except ValueError:
+        parts=data.split(None,2)
+        params={"title":parts[0],"message":parts[1]}
+    sendrpc("GUI.ShowNotification",params)
+
+def processplay(data):
+    try:
+        params=json.loads(data)
+        sendrpc("Player.Open",params)
+    except ValueError:
+        player.play(data)
+
+def processplaybackstate(data):
+    if data=="0" or data=="stop":
+        player.stop()
+    elif data=="1" or data=="resume":
+        if not player.isPlaying():
+            player.pause()
+    elif data=="2" or data=="pause":
+        if player.isPlaying():
+            player.pause()
+    elif data=="next":
+        player.playnext()
+    elif data=="previous":
+        player.playprevious()        
+
+def processcommand(topic,data):
+    if topic=="notify":
+        processnotify(data)
+    elif topic=="play":
+        processplay(data)
+    elif topic=="playbackstate":
+        processplaybackstate(data)
+    else:
+        xbmc.log("MQTT: Unknown command "+topic)
+
+#
+# Handles incoming MQTT messages
+#
 def msghandler(mqc,userdata,msg):
     try:
         global topic
@@ -82,6 +187,10 @@ def disconnecthandler(mqc,userdata,rc):
     time.sleep(5)
     mqc.reconnect()
 
+#
+# Starts connection to the MQTT broker, sets the will
+# and subscribes to the command topic
+#
 def startmqtt():
     global topic,mqc
     mqc=mqtt.Client()
@@ -96,12 +205,16 @@ def startmqtt():
     mqc.connect(__addon__.getSetting("mqtthost"),__addon__.getSetting("mqttport"),60)
     mqc.loop_start()
 
+#
+# Addon initialization and shutdown
+#
 if (__name__ == "__main__"):
     global monitor,player
     xbmc.log('MQTT: MQTT Adapter Version %s started' % __version__)
     monitor=MQTTMonitor()
     player=MQTTPlayer()
     startmqtt()
-    monitor.waitForAbort()
+    while not monitor.waitForAbort(30):
+        publishprogress()
     mqc.loop_stop(True)
     
