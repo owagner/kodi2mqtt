@@ -74,6 +74,7 @@ def msghandler(mqc,userdata,msg):
 
 def connecthandler(mqc,userdata,rc):
     xbmc.log("MQTT: Connected to MQTT broker with rc=%d" % (rc))
+    mqc.publish(topic+"connected",2,qos=1,retain=True)
     mqc.subscribe(topic+"command/#",qos=0)
 
 def disconnecthandler(mqc,userdata,rc):
@@ -93,7 +94,6 @@ def startmqtt():
     mqc.will_set(topic+"connected",0,qos=2,retain=True)
     xbmc.log("MQTT: Connecting to MQTT broker at %s:%s" % (__addon__.getSetting("mqtthost"),__addon__.getSetting("mqttport")))
     mqc.connect(__addon__.getSetting("mqtthost"),__addon__.getSetting("mqttport"),60)
-    mqc.publish(topic+"connected",2,qos=1,retain=True)
     mqc.loop_start()
 
 if (__name__ == "__main__"):
