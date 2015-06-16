@@ -11,6 +11,8 @@ __addon__      = xbmcaddon.Addon()
 __version__    = __addon__.getAddonInfo('version')
 
 activeplayerid=-1
+lasttitle=""
+lastdetail={}
 
 def sendrpc(method,params):
     res=xbmc.executeJSONRPC(json.dumps({"jsonrpc":"2.0","method":method,"params":params,"id":1}))
@@ -74,10 +76,16 @@ def publishprogress():
 #
 def publishdetails():
     global player,activeplayerid
+    global lasttitle,lastdetail
     if not player.isPlaying():
         return
     res=sendrpc("Player.GetItem",{"playerid":activeplayerid,"properties":["title","streamdetails","file"]})
-    publish("title",res["result"]["item"]["title"],{"kodi_details":res["result"]["item"]})
+    newtitle=res["result"]["item"]["title"]
+    newdetail={"kodi_details":res["result"]["item"]}
+    if newtitle!=lasttitle or newdetail!=lastdetail:
+        lasttitle=newtitle
+        lastdetail=newdetail
+        publish("title",newtitle,newdetail)
     publishprogress()
 
 #
@@ -179,7 +187,6 @@ def msghandler(mqc,userdata,msg):
 
 def connecthandler(mqc,userdata,rc):
     xbmc.log("MQTT: Connected to MQTT broker with rc=%d" % (rc))
-    mqc.publish(topic+"connected",2,qos=1,retain=True)
     mqc.subscribe(topic+"command/#",qos=0)
 
 def disconnecthandler(mqc,userdata,rc):
@@ -203,6 +210,7 @@ def startmqtt():
     mqc.will_set(topic+"connected",0,qos=2,retain=True)
     xbmc.log("MQTT: Connecting to MQTT broker at %s:%s" % (__addon__.getSetting("mqtthost"),__addon__.getSetting("mqttport")))
     mqc.connect(__addon__.getSetting("mqtthost"),__addon__.getSetting("mqttport"),60)
+    mqc.publish(topic+"connected",2,qos=1,retain=True)
     mqc.loop_start()
 
 #
@@ -214,7 +222,7 @@ if (__name__ == "__main__"):
     monitor=MQTTMonitor()
     player=MQTTPlayer()
     startmqtt()
-    while not monitor.waitForAbort(30):
-        publishprogress()
+    while not monitor.waitForAbort(20):
+        publishdetails()
     mqc.loop_stop(True)
     

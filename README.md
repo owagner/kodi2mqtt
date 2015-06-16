@@ -1,5 +1,5 @@
-kodi2mqtt
-=========
+MQTT addon for Kodi
+===================
 
   Written and (C) 2015 Oliver Wagner <owagner@tellerulam.com> 
   
@@ -8,7 +8,7 @@ kodi2mqtt
 
 Overview
 --------
-kodi2mqtt is a Kodi addon which acts as an adapter between a Kodi media center instance and MQTT. 
+This is a Kodi addon which acts as an adapter between a Kodi media center instance and MQTT. 
 It publishes Kodi's playback state on MQTT topics, and provides remote control capability also via 
 messages to MQTT topics.
 
@@ -29,7 +29,7 @@ Settings
 --------
 The addon has three settings:
 
-* the MQTT broker's IP address (defaults to 127.0.0.1)
+* the MQTT broker's host name or IP address (defaults to 127.0.0.1)
 * the MQTT broker's port. This defaults to 1883, which is the MQTT standard port for unencrypted connections.
 * the topic prefix which to use in all published and subscribed topics. Defaults to "kodi/".
 

@@ -1,3 +1,10 @@
+V0.4 - 2015-06-16 - owagner
+  - Settings: MQTT broker address is now a text field and thus allows entering of hostnames
+  - will now check whether the title information changes during progress
+    checking, and will republish the "title" topic if a change was detected
+  - increase progress publish rate to 20s (from 30s)
+  - avoid "kodi2mqtt" as a name in the documentation and addon itself, and instead stick to "MQTT Adapter"
+
 V0.3 - 2015-03-22 - owagner
   - fixed division by zero when switching TV channels
   - now supports command/notify to send notifications
