@@ -80,12 +80,13 @@ def publishdetails():
     if not player.isPlaying():
         return
     res=sendrpc("Player.GetItem",{"playerid":activeplayerid,"properties":["title","streamdetails","file"]})
-    newtitle=res["result"]["item"]["title"]
-    newdetail={"kodi_details":res["result"]["item"]}
-    if newtitle!=lasttitle or newdetail!=lastdetail:
-        lasttitle=newtitle
-        lastdetail=newdetail
-        publish("title",newtitle,newdetail)
+    if "result" in res:
+        newtitle=res["result"]["item"]["title"]
+        newdetail={"kodi_details":res["result"]["item"]}
+        if newtitle!=lasttitle or newdetail!=lastdetail:
+            lasttitle=newtitle
+            lastdetail=newdetail
+            publish("title",newtitle,newdetail)
     publishprogress()
 
 #

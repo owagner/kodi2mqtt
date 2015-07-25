@@ -1,3 +1,7 @@
+V0.5 - 2015-07-25 - owagner
+  - fixed script error occuring when playback details where not immediate
+    available when starting playback
+
 V0.4 - 2015-06-16 - owagner
   - Settings: MQTT broker address is now a text field and thus allows entering of hostnames
   - will now check whether the title information changes during progress
