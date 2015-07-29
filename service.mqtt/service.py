@@ -11,6 +11,7 @@ __addon__      = xbmcaddon.Addon()
 __version__    = __addon__.getAddonInfo('version')
 
 activeplayerid=-1
+activeplayertype=""
 lasttitle=""
 lastdetail={}
 
@@ -40,15 +41,16 @@ def publish(suffix,val,more):
 # the state is "playing"
 #
 def setplaystate(state,detail):
-    global activeplayerid
+    global activeplayerid,activeplayertype
     if state==1:
         res=sendrpc("Player.GetActivePlayers",{})
         activeplayerid=res["result"][0]["playerid"]        
+        activeplayertype=res["result"][0]["type"]
         res=sendrpc("Player.GetProperties",{"playerid":activeplayerid,"properties":["speed","currentsubtitle","currentaudiostream","repeat","subtitleenabled"]})
-        publish("playbackstate",state,{"kodi_state":detail,"kodi_playbackdetails":res["result"]})
+        publish("playbackstate",state,{"kodi_state":detail,"kodi_playbackdetails":res["result"],"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype})
         publishdetails()
     else:
-        publish("playbackstate",state,{"kodi_state":detail})
+        publish("playbackstate",state,{"kodi_state":detail,"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype})
 
 def convtime(ts):
     return("%02d:%02d:%02d" % (ts/3600,(ts/60)%60,ts%60))

@@ -1,3 +1,6 @@
+v0.6 - 2015-07-29 - owagner
+  - include "kodi_playerid" and "kodi_playertype" in playbackstate updates [#2]
+
 V0.5 - 2015-07-25 - owagner
   - fixed script error occuring when playback details where not immediate
     available when starting playback

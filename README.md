@@ -44,6 +44,8 @@ The addon publishes on the following topics (prefixed with the configured topic 
   - "kodi_playbackdetails": an object with further details about the playback state. This is effectivly the result
     of the JSON-RPC call Player.GetItem with the properties "speed", "currentsubtitle", "currentaudiostream", "repeat"
     and "subtitleenabled"
+  - "kodi_playerid": the ID of the active player
+  - "kodi_playertype": the type of the active player (e.g. "video")
 * status/progress: a JSON-encoded object with the fields
   - "val" is the percentage of progress in playing back the current item
   - "kodi_time": the playback position in the current item
