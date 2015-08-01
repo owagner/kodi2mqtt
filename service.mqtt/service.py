@@ -81,7 +81,7 @@ def publishdetails():
     global lasttitle,lastdetail
     if not player.isPlaying():
         return
-    res=sendrpc("Player.GetItem",{"playerid":activeplayerid,"properties":["title","streamdetails","file"]})
+    res=sendrpc("Player.GetItem",{"playerid":activeplayerid,"properties":["title","streamdetails","file","thumbnail","fanart"]})
     if "result" in res:
         newtitle=res["result"]["item"]["title"]
         newdetail={"kodi_details":res["result"]["item"]}
