@@ -53,7 +53,8 @@ The addon publishes on the following topics (prefixed with the configured topic 
 * status/title: a JSON-encoded object with the fields
   - "val": the title of the current playback item
   - "kodi_details": an object with further details about the current playback items. This is effectivly the result
-    of a JSON-RPC call Player.GetItem with the properties "title", "streamdetails" and "file"
+    of a JSON-RPC call Player.GetItem with the properties "title", "streamdetails", "file", "thumbnail"
+    and "fanart"
 
 The addon listens to the following topics (prefixed with the configured topic prefix):
 

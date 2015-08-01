@@ -1,3 +1,6 @@
+v0.7 - 2015-08-01 - existsec
+  - include "thumbnail" and "fanart" in title message
+
 v0.6 - 2015-07-29 - owagner
   - include "kodi_playerid" and "kodi_playertype" in playbackstate updates [#2]
 
