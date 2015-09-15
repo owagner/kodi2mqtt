@@ -1,3 +1,8 @@
+v0.8 - 2015-09-15 - owagner
+  - updated PAHO library to v1.0.2 to fix startup issues caused by
+    "localhost" not resolving, which apparently seems to happen on some
+    OpenELEC installations. Fixes #6 (thanks fab33)
+
 v0.7 - 2015-08-01 - existsec
   - include "thumbnail" and "fanart" in title message
 
