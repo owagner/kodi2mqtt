@@ -5,4 +5,8 @@
         <setting label="30012" type="number"   id="mqttport" default="1883"/>
         <setting label="30013" type="text" id="mqtttopic" default="kodi/"/>
     </category>
+    <category label="31000">
+        <setting label="31001" type="text"   id="mqttusername" default=""/>
+        <setting label="31002" type="text"   id="mqttpassword" option="hidden" default=""/>
+    </category>
 </settings>
