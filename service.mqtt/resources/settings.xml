@@ -5,8 +5,9 @@
         <setting label="30012" type="number"   id="mqttport" default="1883"/>
         <setting label="30013" type="text" id="mqtttopic" default="kodi/"/>
     </category>
-    <category label="31000">
-        <setting label="31001" type="text"   id="mqttusername" default=""/>
-        <setting label="31002" type="text"   id="mqttpassword" option="hidden" default=""/>
+    <category label="30100">
+        <setting label="30101" type="bool"   id="mqttanonymousconnection" default="true" />
+        <setting label="30102" type="text"   id="mqttusername" default="" visible="eq(-1,false)" />
+        <setting label="30103" type="text"   id="mqttpassword" option="hidden" default="" visible="eq(-2,false)" />
     </category>
 </settings>
