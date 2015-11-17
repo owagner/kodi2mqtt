@@ -207,6 +207,8 @@ def startmqtt():
     mqc.on_message=msghandler
     mqc.on_connect=connecthandler
     mqc.on_disconnect=disconnecthandler
+    if __addon__.getSetting("mqttanonymousconnection")=='false':
+        mqc.username_pw_set(__addon__.getSetting("mqttusername"), __addon__.getSetting("mqttpassword"))
     topic=__addon__.getSetting("mqtttopic")
     if not topic.endswith("/"):
         topic+="/"

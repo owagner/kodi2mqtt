@@ -32,3 +32,18 @@ msgctxt "#30013"
 msgid "MQTT Topic Prefix"
 msgstr ""
 
+msgctxt "#30100"
+msgid "Authentication"
+msgstr ""
+
+msgctxt "#30101"
+msgid "Use anonymous connection"
+msgstr ""
+
+msgctxt "#30102"
+msgid "Username"
+msgstr ""
+
+msgctxt "#30103"
+msgid "Password"
+msgstr ""
