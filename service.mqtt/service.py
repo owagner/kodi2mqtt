@@ -5,6 +5,7 @@ import xbmc,xbmcaddon
 import json
 import threading
 import time
+import socket
 from lib import client as mqtt
 
 __addon__      = xbmcaddon.Addon()
@@ -44,7 +45,7 @@ def setplaystate(state,detail):
     global activeplayerid,activeplayertype
     if state==1:
         res=sendrpc("Player.GetActivePlayers",{})
-        activeplayerid=res["result"][0]["playerid"]        
+        activeplayerid=res["result"][0]["playerid"]
         activeplayertype=res["result"][0]["type"]
         res=sendrpc("Player.GetProperties",{"playerid":activeplayerid,"properties":["speed","currentsubtitle","currentaudiostream","repeat","subtitleenabled"]})
         publish("playbackstate",state,{"kodi_state":detail,"kodi_playbackdetails":res["result"],"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype})
@@ -113,22 +114,22 @@ class MQTTPlayer(xbmc.Player):
 
     def onPlayBackEnded(self):
         setplaystate(0,"ended")
-        
+
     def onPlayBackStopped(self):
         setplaystate(0,"stopped")
-        
+
     def onPlayBackSeek(self):
         publishprogress()
-        
+
     def onPlayBackSeek(self):
         publishprogress()
-        
+
     def onPlayBackSeekChapter(self):
         publishprogress()
-    
+
     def onPlayBackSpeedChanged(speed):
         setplaystate(1,"speed")
-        
+
     def onQueueNextItem():
         xbmc.log("MQTT onqn");
 
@@ -162,7 +163,7 @@ def processplaybackstate(data):
     elif data=="next":
         player.playnext()
     elif data=="previous":
-        player.playprevious()        
+        player.playprevious()
 
 def processcommand(topic,data):
     if topic=="notify":
@@ -226,8 +227,17 @@ if (__name__ == "__main__"):
     xbmc.log('MQTT: MQTT Adapter Version %s started' % __version__)
     monitor=MQTTMonitor()
     player=MQTTPlayer()
-    startmqtt()
+    for attempt in range(int(__addon__.getSetting("mqttretry"))):
+        try:
+            startmqtt()
+        except socket.error:
+            xbmc.log("MQTT: Socket error raised, retrying..")
+            time.sleep(5)
+        else:
+            break
+    else:
+        xbmc.log("MQTT: No connection possible, giving up.")
+        mqc.loop_stop(True)
     while not monitor.waitForAbort(20):
         publishdetails()
     mqc.loop_stop(True)
-    

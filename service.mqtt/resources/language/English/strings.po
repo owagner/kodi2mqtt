@@ -32,6 +32,10 @@ msgctxt "#30013"
 msgid "MQTT Topic Prefix"
 msgstr ""
 
+msgctxt "#30014"
+msgid "MQTT Reconnect Retries"
+msgstr ""
+
 msgctxt "#30100"
 msgid "Authentication"
 msgstr ""

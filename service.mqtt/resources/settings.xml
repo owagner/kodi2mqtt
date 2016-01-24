@@ -4,6 +4,7 @@
         <setting label="30011" type="text"   id="mqtthost" default="127.0.0.1"/>
         <setting label="30012" type="number"   id="mqttport" default="1883"/>
         <setting label="30013" type="text" id="mqtttopic" default="kodi/"/>
+        <setting label="30014" type="number" id="mqttretry" default="5"/>
     </category>
     <category label="30100">
         <setting label="30101" type="bool"   id="mqttanonymousconnection" default="true" />
