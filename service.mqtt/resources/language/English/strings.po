@@ -37,7 +37,7 @@ msgid "MQTT Reconnect Retries"
 msgstr ""
 
 msgctxt "#30015"
-msgid "No details publishing for these words (comma separated)"
+msgid "Ignore details for these words (comma separated)"
 msgstr ""
 
 msgctxt "#30100"
