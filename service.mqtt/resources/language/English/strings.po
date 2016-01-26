@@ -36,6 +36,10 @@ msgctxt "#30014"
 msgid "MQTT Reconnect Retries"
 msgstr ""
 
+msgctxt "#30015"
+msgid "No details publishing for these words (comma separated)"
+msgstr ""
+
 msgctxt "#30100"
 msgid "Authentication"
 msgstr ""

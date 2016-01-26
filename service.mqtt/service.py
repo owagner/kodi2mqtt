@@ -44,6 +44,9 @@ def publish(suffix,val,more):
 def setplaystate(state,detail):
     global activeplayerid,activeplayertype
     if state==1:
+        if (all(player.getPlayingFile().find (v) > -1 for v in (__addon__.getSetting('mqttignore').split(',')))):
+            publish("playbackstate",state,{"kodi_state":detail,"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype})
+            return
         res=sendrpc("Player.GetActivePlayers",{})
         activeplayerid=res["result"][0]["playerid"]
         activeplayertype=res["result"][0]["type"]
@@ -80,7 +83,10 @@ def publishprogress():
 def publishdetails():
     global player,activeplayerid
     global lasttitle,lastdetail
+#    path = getPlayingFile()
     if not player.isPlaying():
+        return
+    if (all(player.getPlayingFile().find (v) > -1 for v in (__addon__.getSetting('mqttignore').split(',')))):
         return
     res=sendrpc("Player.GetItem",{"playerid":activeplayerid,"properties":["title","streamdetails","file","thumbnail","fanart"]})
     if "result" in res:
@@ -103,6 +109,7 @@ class MQTTMonitor(xbmc.Monitor):
         startmqtt()
 
 class MQTTPlayer(xbmc.Player):
+
     def onPlayBackStarted(self):
         setplaystate(1,"started")
 
