@@ -15,9 +15,13 @@ activeplayertype=""
 lasttitle=""
 lastdetail={}
 
+def mqttlogging(log):
+    if  __addon__.getSetting("mqttdebug")=='true':
+        xbmc.log(log)
+
 def sendrpc(method,params):
     res=xbmc.executeJSONRPC(json.dumps({"jsonrpc":"2.0","method":method,"params":params,"id":1}))
-    xbmc.log("MQTT: JSON-RPC call "+method+" returned "+res)
+    mqttlogging("MQTT: JSON-RPC call "+method+" returned "+res)
     return json.loads(res)
 
 #
@@ -33,7 +37,7 @@ def publish(suffix,val,more):
         robj.update(more)
     jsonstr=json.dumps(robj)
     fulltopic=topic+"status/"+suffix
-    xbmc.log("MQTT: Publishing @"+fulltopic+": "+jsonstr)
+    mqttlogging("MQTT: Publishing @"+fulltopic+": "+jsonstr)
     mqc.publish(fulltopic,jsonstr,qos=0,retain=True)
 
 #
@@ -97,7 +101,7 @@ def publishdetails():
 class MQTTMonitor(xbmc.Monitor):
     def onSettingsChanged(self):
         global mqc
-        xbmc.log("MQTT: Settings changed, reconnecting broker")
+        mqttlogging("MQTT: Settings changed, reconnecting broker")
         mqc.loop_stop(True)
         startmqtt()
 
@@ -130,7 +134,7 @@ class MQTTPlayer(xbmc.Player):
         setplaystate(1,"speed")
         
     def onQueueNextItem():
-        xbmc.log("MQTT onqn");
+        mqttlogging("MQTT onqn");
 
 #
 # Handles commands
@@ -172,7 +176,7 @@ def processcommand(topic,data):
     elif topic=="playbackstate":
         processplaybackstate(data)
     else:
-        xbmc.log("MQTT: Unknown command "+topic)
+        mqttlogging("MQTT: Unknown command "+topic)
 
 #
 # Handles incoming MQTT messages
@@ -186,14 +190,14 @@ def msghandler(mqc,userdata,msg):
         if mytopic.startswith("command/"):
             processcommand(mytopic[8:],msg.payload)
     except Exception as e:
-        xbmc.log("MQTT: Error processing message %s: %s" % (type(e).__name__,e))
+        mqttlogging("MQTT: Error processing message %s: %s" % (type(e).__name__,e))
 
 def connecthandler(mqc,userdata,rc):
-    xbmc.log("MQTT: Connected to MQTT broker with rc=%d" % (rc))
+    mqttlogging("MQTT: Connected to MQTT broker with rc=%d" % (rc))
     mqc.subscribe(topic+"command/#",qos=0)
 
 def disconnecthandler(mqc,userdata,rc):
-    xbmc.log("MQTT: Disconnected from MQTT broker with rc=%d" % (rc))
+    mqttlogging("MQTT: Disconnected from MQTT broker with rc=%d" % (rc))
     time.sleep(5)
     mqc.reconnect()
 
@@ -213,7 +217,7 @@ def startmqtt():
     if not topic.endswith("/"):
         topic+="/"
     mqc.will_set(topic+"connected",0,qos=2,retain=True)
-    xbmc.log("MQTT: Connecting to MQTT broker at %s:%s" % (__addon__.getSetting("mqtthost"),__addon__.getSetting("mqttport")))
+    mqttlogging("MQTT: Connecting to MQTT broker at %s:%s" % (__addon__.getSetting("mqtthost"),__addon__.getSetting("mqttport")))
     mqc.connect(__addon__.getSetting("mqtthost"),__addon__.getSetting("mqttport"),60)
     mqc.publish(topic+"connected",2,qos=1,retain=True)
     mqc.loop_start()
