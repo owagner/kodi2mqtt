@@ -213,6 +213,13 @@ def startmqtt():
     mqc.on_disconnect=disconnecthandler
     if __addon__.getSetting("mqttanonymousconnection")=='false':
         mqc.username_pw_set(__addon__.getSetting("mqttusername"), __addon__.getSetting("mqttpassword"))
+        xbmc.log("MQTT: Anonymous disabled, connecting as user: %s" % __addon__.getSetting("mqttusername"))
+    if __addon__.getSetting("mqtttlsconnection")=='true' and  __addon__.getSetting("mqtttlsconnectioncrt")!='' and __addon__.getSetting("mqtttlsclient")=='false':
+        mqc.tls_set(__addon__.getSetting("mqtttlsconnectioncrt"))
+        xbmc.log("MQTT: TLS enabled, connecting using CA certificate: %s" % __addon__.getSetting("mqtttlsconnectioncrt"))
+    elif __addon__.getSetting("mqtttlsconnection")=='true' and  __addon__.getSetting("mqtttlsclient")=='true' and __addon__.getSetting("mqtttlsclientcrt")!='' and  __addon__.getSetting("mqtttlsclientkey")!='':    
+        mqc.tls_set(__addon__.getSetting("mqtttlsconnectioncrt"), __addon__.getSetting("mqtttlsclientcrt"), __addon__.getSetting("mqtttlsclientkey"))
+        xbmc.log("MQTT: TLS with client certificates enabled, connecting using certificates CA: %s, client %s and key: %s" % (__addon__.getSetting("mqttusername"), __addon__.getSetting("mqtttlsclientcrt"), __addon__.getSetting("mqtttlsclientkey")))
     topic=__addon__.getSetting("mqtttopic")
     if not topic.endswith("/"):
         topic+="/"

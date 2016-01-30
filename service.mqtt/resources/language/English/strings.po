@@ -51,3 +51,23 @@ msgstr ""
 msgctxt "#30103"
 msgid "Password"
 msgstr ""
+
+msgctxt "#30104"
+msgid "Use TLS connection"
+msgstr ""
+
+msgctxt "#30105"
+msgid "TLS broker CA crt"
+msgstr ""
+
+msgctxt "#30106"
+msgid "Use client certificates"
+msgstr ""
+
+msgctxt "#30107"
+msgid "TLS client certificate"
+msgstr ""
+
+msgctxt "#30108"
+msgid "TLS client key"
+msgstr ""
