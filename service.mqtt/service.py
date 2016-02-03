@@ -11,6 +11,7 @@ from lib import client as mqtt
 __addon__      = xbmcaddon.Addon()
 __version__    = __addon__.getAddonInfo('version')
 
+mqttignore = (__addon__.getSetting('mqttignore').split(','))
 activeplayerid=-1
 activeplayertype=""
 lasttitle=""
@@ -43,18 +44,15 @@ def publish(suffix,val,more):
 #
 def setplaystate(state,detail):
     global activeplayerid,activeplayertype
-    if state==1:
-        if (all(player.getPlayingFile().find (v) > -1 for v in (__addon__.getSetting('mqttignore').split(',')))):
-            publish("playbackstate",state,{"kodi_state":detail,"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype})
-            return
+    if state==1 and all(xbmc.Player().getPlayingFile().find (v) <= -1 for v in mqttignore):
         res=sendrpc("Player.GetActivePlayers",{})
         activeplayerid=res["result"][0]["playerid"]
         activeplayertype=res["result"][0]["type"]
         res=sendrpc("Player.GetProperties",{"playerid":activeplayerid,"properties":["speed","currentsubtitle","currentaudiostream","repeat","subtitleenabled"]})
-        publish("playbackstate",state,{"kodi_state":detail,"kodi_playbackdetails":res["result"],"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype})
+        publish("playbackstate",state,{"kodi_state":detail,"kodi_playbackdetails":res["result"],"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype,"kodi_timestamp":int(time.time())})
         publishdetails()
     else:
-        publish("playbackstate",state,{"kodi_state":detail,"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype})
+        publish("playbackstate",state,{"kodi_state":detail,"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype,"kodi_timestamp":int(time.time())})
 
 def convtime(ts):
     return("%02d:%02d:%02d" % (ts/3600,(ts/60)%60,ts%60))
@@ -83,19 +81,17 @@ def publishprogress():
 def publishdetails():
     global player,activeplayerid
     global lasttitle,lastdetail
-#    path = getPlayingFile()
     if not player.isPlaying():
         return
-    if (all(player.getPlayingFile().find (v) > -1 for v in (__addon__.getSetting('mqttignore').split(',')))):
-        return
-    res=sendrpc("Player.GetItem",{"playerid":activeplayerid,"properties":["title","streamdetails","file","thumbnail","fanart"]})
-    if "result" in res:
-        newtitle=res["result"]["item"]["title"]
-        newdetail={"kodi_details":res["result"]["item"]}
-        if newtitle!=lasttitle or newdetail!=lastdetail:
-            lasttitle=newtitle
-            lastdetail=newdetail
-            publish("title",newtitle,newdetail)
+    if all(xbmc.Player().getPlayingFile().find (v) <= -1 for v in mqttignore):
+        res=sendrpc("Player.GetItem",{"playerid":activeplayerid,"properties":["title","streamdetails","file","thumbnail","fanart"]})
+        if "result" in res:
+            newtitle=res["result"]["item"]["title"]
+            newdetail={"kodi_details":res["result"]["item"]}
+            if newtitle!=lasttitle or newdetail!=lastdetail:
+                lasttitle=newtitle
+                lastdetail=newdetail
+                publish("title",newtitle,newdetail)
     publishprogress()
 
 #
