@@ -21,27 +21,31 @@ msgid "General"
 msgstr ""
 
 msgctxt "#30011"
-msgid "MQTT Broker IP"
+msgid "Broker IP"
 msgstr ""
 
 msgctxt "#30012"
-msgid "MQTT Broker Port"
+msgid "Broker Port"
 msgstr ""
 
 msgctxt "#30013"
-msgid "MQTT Topic Prefix"
+msgid "Topic Prefix"
 msgstr ""
 
 msgctxt "#30014"
-msgid "MQTT Reconnect Retries"
+msgid "Reconnect Retries"
 msgstr ""
 
 msgctxt "#30015"
-msgid "Ignore details for these words (comma separated)"
+msgid "Publish progress"
 msgstr ""
 
 msgctxt "#30016"
-msgid "Progress interval (in seconds)"
+msgid "Interval (in seconds)"
+msgstr ""
+
+msgctxt "#30017"
+msgid "Ignore details for these words (comma separated)"
 msgstr ""
 
 msgctxt "#30100"

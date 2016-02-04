@@ -5,8 +5,9 @@
         <setting label="30012" type="number" id="mqttport" default="1883"/>
         <setting label="30013" type="text" id="mqtttopic" default="kodi/"/>
         <setting label="30014" type="number" id="mqttretry" default="5"/>
-        <setting label="30015" type="text" id="mqttignore" default=""/>
-        <setting label="30016" type="text" id="mqttinterval" default="20"/>
+        <setting label="30015" type="bool" id="mqttprogress" default="true"/>
+        <setting label="30016" type="text" id="mqttprogressinterval" default="20" visible="eq(-1,true)"/>
+        <setting label="30017" type="text" id="mqttignore" default=""/>
     </category>
     <category label="30100">
         <setting label="30101" type="bool"   id="mqttanonymousconnection" default="true" />

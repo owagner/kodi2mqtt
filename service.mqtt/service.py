@@ -243,5 +243,6 @@ if (__name__ == "__main__"):
         xbmc.log("MQTT: No connection possible, giving up.")
         mqc.loop_stop(True)
     while not monitor.waitForAbort(mqttinterval):
-        publishdetails()
+        if __addon__.getSetting('mqttprogress').lower() == "true":
+            publishdetails()
     mqc.loop_stop(True)
