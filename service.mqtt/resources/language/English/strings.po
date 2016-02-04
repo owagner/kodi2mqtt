@@ -40,6 +40,10 @@ msgctxt "#30015"
 msgid "Ignore details for these words (comma separated)"
 msgstr ""
 
+msgctxt "#30016"
+msgid "Progress interval (in seconds)"
+msgstr ""
+
 msgctxt "#30100"
 msgid "Authentication"
 msgstr ""

@@ -6,6 +6,7 @@
         <setting label="30013" type="text" id="mqtttopic" default="kodi/"/>
         <setting label="30014" type="number" id="mqttretry" default="5"/>
         <setting label="30015" type="text" id="mqttignore" default=""/>
+        <setting label="30016" type="text" id="mqttinterval" default="20"/>
     </category>
     <category label="30100">
         <setting label="30101" type="bool"   id="mqttanonymousconnection" default="true" />

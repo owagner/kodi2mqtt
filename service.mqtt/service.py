@@ -11,7 +11,8 @@ from lib import client as mqtt
 __addon__      = xbmcaddon.Addon()
 __version__    = __addon__.getAddonInfo('version')
 
-mqttignore = (__addon__.getSetting('mqttignore').split(','))
+mqttignore = __addon__.getSetting('mqttignore').split(',')
+mqttinterval = int(__addon__.getSetting('mqttinterval'))
 activeplayerid=-1
 activeplayertype=""
 lasttitle=""
@@ -241,6 +242,6 @@ if (__name__ == "__main__"):
     else:
         xbmc.log("MQTT: No connection possible, giving up.")
         mqc.loop_stop(True)
-    while not monitor.waitForAbort(20):
+    while not monitor.waitForAbort(mqttinterval):
         publishdetails()
     mqc.loop_stop(True)
