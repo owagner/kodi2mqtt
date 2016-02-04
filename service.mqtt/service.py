@@ -11,8 +11,14 @@ from lib import client as mqtt
 __addon__      = xbmcaddon.Addon()
 __version__    = __addon__.getAddonInfo('version')
 
-mqttignore = __addon__.getSetting('mqttignore').split(',')
-mqttinterval = int(__addon__.getSetting('mqttinterval'))
+def getSetting(setting):
+    return __addon__.getSetting(setting).replace(' ','')
+
+mqttretry = int(getSetting("mqttretry"))
+mqttprogress = getSetting('mqttprogress').lower() == "true"
+mqttinterval = int(getSetting('mqttinterval'))
+mqttdetails = getSetting('mqttdetails').lower() == "true"
+mqttignore = getSetting('mqttignore').split(',')
 activeplayerid=-1
 activeplayertype=""
 lasttitle=""
@@ -45,13 +51,16 @@ def publish(suffix,val,more):
 #
 def setplaystate(state,detail):
     global activeplayerid,activeplayertype
-    if state==1 and all(xbmc.Player().getPlayingFile().find (v) <= -1 for v in mqttignore):
+    if state==1:
         res=sendrpc("Player.GetActivePlayers",{})
         activeplayerid=res["result"][0]["playerid"]
         activeplayertype=res["result"][0]["type"]
-        res=sendrpc("Player.GetProperties",{"playerid":activeplayerid,"properties":["speed","currentsubtitle","currentaudiostream","repeat","subtitleenabled"]})
-        publish("playbackstate",state,{"kodi_state":detail,"kodi_playbackdetails":res["result"],"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype,"kodi_timestamp":int(time.time())})
-        publishdetails()
+        if mqttdetails and (all(xbmc.Player().getPlayingFile().find (v) <= -1 for v in mqttignore)):
+            res=sendrpc("Player.GetProperties",{"playerid":activeplayerid,"properties":["speed","currentsubtitle","currentaudiostream","repeat","subtitleenabled"]})
+            publish("playbackstate",state,{"kodi_state":detail,"kodi_playbackdetails":res["result"],"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype,"kodi_timestamp":int(time.time())})
+            publishdetails()
+        else:
+            publish("playbackstate",state,{"kodi_state":detail,"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype,"kodi_timestamp":int(time.time())})
     else:
         publish("playbackstate",state,{"kodi_state":detail,"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype,"kodi_timestamp":int(time.time())})
 
@@ -212,14 +221,14 @@ def startmqtt():
     mqc.on_message=msghandler
     mqc.on_connect=connecthandler
     mqc.on_disconnect=disconnecthandler
-    if __addon__.getSetting("mqttanonymousconnection")=='false':
-        mqc.username_pw_set(__addon__.getSetting("mqttusername"), __addon__.getSetting("mqttpassword"))
-    topic=__addon__.getSetting("mqtttopic")
+    if getSetting("mqttanonymousconnection")=='false':
+        mqc.username_pw_set(getSetting("mqttusername"), __addon__.getSetting("mqttpassword"))
+    topic=getSetting("mqtttopic")
     if not topic.endswith("/"):
         topic+="/"
     mqc.will_set(topic+"connected",0,qos=2,retain=True)
-    xbmc.log("MQTT: Connecting to MQTT broker at %s:%s" % (__addon__.getSetting("mqtthost"),__addon__.getSetting("mqttport")))
-    mqc.connect(__addon__.getSetting("mqtthost"),__addon__.getSetting("mqttport"),60)
+    xbmc.log("MQTT: Connecting to MQTT broker at %s:%s" % (getSetting("mqtthost"),getSetting("mqttport")))
+    mqc.connect(getSetting("mqtthost"),getSetting("mqttport"),60)
     mqc.publish(topic+"connected",2,qos=1,retain=True)
     mqc.loop_start()
 
@@ -231,7 +240,7 @@ if (__name__ == "__main__"):
     xbmc.log('MQTT: MQTT Adapter Version %s started' % __version__)
     monitor=MQTTMonitor()
     player=MQTTPlayer()
-    for attempt in range(int(__addon__.getSetting("mqttretry"))):
+    for attempt in range(mqttretry):
         try:
             startmqtt()
         except socket.error:
@@ -243,6 +252,6 @@ if (__name__ == "__main__"):
         xbmc.log("MQTT: No connection possible, giving up.")
         mqc.loop_stop(True)
     while not monitor.waitForAbort(mqttinterval):
-        if __addon__.getSetting('mqttprogress').lower() == "true":
+        if mqttprogress:
             publishdetails()
     mqc.loop_stop(True)

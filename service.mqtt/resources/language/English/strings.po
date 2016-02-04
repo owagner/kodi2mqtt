@@ -25,27 +25,11 @@ msgid "Broker IP"
 msgstr ""
 
 msgctxt "#30012"
-msgid "Broker Port"
+msgid "Broker port"
 msgstr ""
 
 msgctxt "#30013"
-msgid "Topic Prefix"
-msgstr ""
-
-msgctxt "#30014"
-msgid "Reconnect Retries"
-msgstr ""
-
-msgctxt "#30015"
-msgid "Publish progress"
-msgstr ""
-
-msgctxt "#30016"
-msgid "Interval (in seconds)"
-msgstr ""
-
-msgctxt "#30017"
-msgid "Ignore details for these words (comma separated)"
+msgid "Topic prefix"
 msgstr ""
 
 msgctxt "#30100"
@@ -62,4 +46,28 @@ msgstr ""
 
 msgctxt "#30103"
 msgid "Password"
+msgstr ""
+
+msgctxt "#30200"
+msgid "Advanced"
+msgstr ""
+
+msgctxt "#30201"
+msgid "Reconnect retries"
+msgstr ""
+
+msgctxt "#30202"
+msgid "Publish progress"
+msgstr ""
+
+msgctxt "#30203"
+msgid "Progress interval (in seconds)"
+msgstr ""
+
+msgctxt "#30204"
+msgid "Publish details"
+msgstr ""
+
+msgctxt "#30205"
+msgid "Ignore words (comma separated)"
 msgstr ""

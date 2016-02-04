@@ -4,14 +4,17 @@
         <setting label="30011" type="text" id="mqtthost" default="127.0.0.1"/>
         <setting label="30012" type="number" id="mqttport" default="1883"/>
         <setting label="30013" type="text" id="mqtttopic" default="kodi/"/>
-        <setting label="30014" type="number" id="mqttretry" default="5"/>
-        <setting label="30015" type="bool" id="mqttprogress" default="true"/>
-        <setting label="30016" type="text" id="mqttprogressinterval" default="20" visible="eq(-1,true)"/>
-        <setting label="30017" type="text" id="mqttignore" default=""/>
     </category>
     <category label="30100">
         <setting label="30101" type="bool"   id="mqttanonymousconnection" default="true" />
         <setting label="30102" type="text"   id="mqttusername" default="" visible="eq(-1,false)" />
         <setting label="30103" type="text"   id="mqttpassword" option="hidden" default="" visible="eq(-2,false)" />
+    </category>
+    <category label="30200">
+        <setting label="30201" type="number" id="mqttretry" default="5"/>
+        <setting label="30202" type="bool" id="mqttprogress" default="true"/>
+        <setting label="30203" type="text" id="mqttinterval" default="20" visible="eq(-1,true)"/>
+        <setting label="30204" type="bool" id="mqttdetails" default="true"/>
+        <setting label="30205" type="text" id="mqttignore" default="" visible="eq(-1,true)"/>
     </category>
 </settings>
