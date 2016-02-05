@@ -15,6 +15,7 @@
         <setting label="30202" type="bool" id="mqttprogress" default="true"/>
         <setting label="30203" type="text" id="mqttinterval" default="20" visible="eq(-1,true)"/>
         <setting label="30204" type="bool" id="mqttdetails" default="true"/>
-        <setting label="30205" type="text" id="mqttignore" default="" visible="eq(-1,true)"/>
+        <setting label="30205" type="text" id="mqttignoretitle" default="" visible="eq(-1,true)"/>
+        <setting label="30206" type="text" id="mqttignorepath" default="" visible="eq(-2,true)"/>
     </category>
 </settings>

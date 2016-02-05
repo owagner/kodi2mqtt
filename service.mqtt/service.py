@@ -18,14 +18,20 @@ mqttretry = int(getSetting("mqttretry"))
 mqttprogress = getSetting('mqttprogress').lower() == "true"
 mqttinterval = int(getSetting('mqttinterval'))
 mqttdetails = getSetting('mqttdetails').lower() == "true"
-mqttignore = getSetting('mqttignore').split(',')
+mqttignoretitle = getSetting('mqttignoretitle').lower().split(',')
+mqttignorepath = getSetting('mqttignorepath').lower().split(',')
 activeplayerid=-1
 activeplayertype=""
 lasttitle=""
 lastdetail={}
 
-def ignorelist(data):
-    return all(xbmc.Player().getPlayingFile().find (v.strip()) <= -1 for v in data)
+#
+# Returns true when no words are found, false on one or more matches
+#
+def ignorelist(data,val):
+    if val == "filepath":
+        val=xbmc.Player().getPlayingFile()
+    return all(val.lower().find (v.strip()) <= -1 for v in data)
 
 def sendrpc(method,params):
     res=xbmc.executeJSONRPC(json.dumps({"jsonrpc":"2.0","method":method,"params":params,"id":1}))
@@ -58,7 +64,7 @@ def setplaystate(state,detail):
         res=sendrpc("Player.GetActivePlayers",{})
         activeplayerid=res["result"][0]["playerid"]
         activeplayertype=res["result"][0]["type"]
-        if mqttdetails and ignorelist(mqttignore):
+        if mqttdetails and ignorelist(mqttignorepath,"filepath"):
             res=sendrpc("Player.GetProperties",{"playerid":activeplayerid,"properties":["speed","currentsubtitle","currentaudiostream","repeat","subtitleenabled"]})
             publish("playbackstate",state,{"kodi_state":detail,"kodi_playbackdetails":res["result"],"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype,"kodi_timestamp":int(time.time())})
             publishdetails()
@@ -97,7 +103,7 @@ def publishdetails():
     global lasttitle,lastdetail
     if not player.isPlaying():
         return
-    if ignorelist(mqttignore):
+    if ignorelist(mqttignorepath,"filepath"):
         res=sendrpc("Player.GetItem",{"playerid":activeplayerid,"properties":["title","streamdetails","file","thumbnail","fanart"]})
         if "result" in res:
             newtitle=res["result"]["item"]["title"]
@@ -105,7 +111,8 @@ def publishdetails():
             if newtitle!=lasttitle or newdetail!=lastdetail:
                 lasttitle=newtitle
                 lastdetail=newdetail
-                publish("title",newtitle,newdetail)
+                if ignorelist(mqttignoretitle,newtitle):
+                    publish("title",newtitle,newdetail)
     if mqttprogress:
         publishprogress()
 
