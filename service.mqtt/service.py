@@ -12,7 +12,7 @@ __addon__      = xbmcaddon.Addon()
 __version__    = __addon__.getAddonInfo('version')
 
 def getSetting(setting):
-    return __addon__.getSetting(setting).replace(' ','')
+    return __addon__.getSetting(setting).strip()
 
 mqttretry = int(getSetting("mqttretry"))
 mqttprogress = getSetting('mqttprogress').lower() == "true"
@@ -23,6 +23,9 @@ activeplayerid=-1
 activeplayertype=""
 lasttitle=""
 lastdetail={}
+
+def ignorelist(data):
+    return all(xbmc.Player().getPlayingFile().find (v.strip()) <= -1 for v in data)
 
 def sendrpc(method,params):
     res=xbmc.executeJSONRPC(json.dumps({"jsonrpc":"2.0","method":method,"params":params,"id":1}))
@@ -55,7 +58,7 @@ def setplaystate(state,detail):
         res=sendrpc("Player.GetActivePlayers",{})
         activeplayerid=res["result"][0]["playerid"]
         activeplayertype=res["result"][0]["type"]
-        if mqttdetails and (all(xbmc.Player().getPlayingFile().find (v) <= -1 for v in mqttignore)):
+        if mqttdetails and ignorelist(mqttignore):
             res=sendrpc("Player.GetProperties",{"playerid":activeplayerid,"properties":["speed","currentsubtitle","currentaudiostream","repeat","subtitleenabled"]})
             publish("playbackstate",state,{"kodi_state":detail,"kodi_playbackdetails":res["result"],"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype,"kodi_timestamp":int(time.time())})
             publishdetails()
@@ -88,12 +91,13 @@ def publishprogress():
 #
 # Publish more details about the currently playing item
 #
+
 def publishdetails():
     global player,activeplayerid
     global lasttitle,lastdetail
     if not player.isPlaying():
         return
-    if all(xbmc.Player().getPlayingFile().find (v) <= -1 for v in mqttignore):
+    if ignorelist(mqttignore):
         res=sendrpc("Player.GetItem",{"playerid":activeplayerid,"properties":["title","streamdetails","file","thumbnail","fanart"]})
         if "result" in res:
             newtitle=res["result"]["item"]["title"]
@@ -102,7 +106,8 @@ def publishdetails():
                 lasttitle=newtitle
                 lastdetail=newdetail
                 publish("title",newtitle,newdetail)
-    publishprogress()
+    if mqttprogress:
+        publishprogress()
 
 #
 # Notification subclasses
@@ -253,5 +258,5 @@ if (__name__ == "__main__"):
         mqc.loop_stop(True)
     while not monitor.waitForAbort(mqttinterval):
         if mqttprogress:
-            publishdetails()
+            publishprogress()
     mqc.loop_stop(True)
