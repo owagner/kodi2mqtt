@@ -18,8 +18,7 @@ mqttretry = int(getSetting("mqttretry"))
 mqttprogress = getSetting('mqttprogress').lower() == "true"
 mqttinterval = int(getSetting('mqttinterval'))
 mqttdetails = getSetting('mqttdetails').lower() == "true"
-mqttignoretitle = getSetting('mqttignoretitle').lower().split(',')
-mqttignorepath = getSetting('mqttignorepath').lower().split(',')
+mqttignore = getSetting('mqttignore').lower().split(',')
 activeplayerid=-1
 activeplayertype=""
 lasttitle=""
@@ -68,7 +67,7 @@ def setplaystate(state,detail):
         res=sendrpc("Player.GetActivePlayers",{})
         activeplayerid=res["result"][0]["playerid"]
         activeplayertype=res["result"][0]["type"]
-        if mqttdetails and ignorelist(mqttignorepath,"filepath"):
+        if mqttdetails and ignorelist(mqttignore,"filepath"):
             res=sendrpc("Player.GetProperties",{"playerid":activeplayerid,"properties":["speed","currentsubtitle","currentaudiostream","repeat","subtitleenabled"]})
             publish("playbackstate",state,{"kodi_state":detail,"kodi_playbackdetails":res["result"],"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype,"kodi_timestamp":int(time.time())})
             publishdetails()
@@ -107,7 +106,7 @@ def publishdetails():
     global lasttitle,lastdetail
     if not player.isPlaying():
         return
-    if ignorelist(mqttignorepath,"filepath"):
+    if ignorelist(mqttignore,"filepath"):
         res=sendrpc("Player.GetItem",{"playerid":activeplayerid,"properties":["title","streamdetails","file","thumbnail","fanart"]})
         if "result" in res:
             newtitle=res["result"]["item"]["title"]
@@ -115,7 +114,7 @@ def publishdetails():
             if newtitle!=lasttitle or newdetail!=lastdetail:
                 lasttitle=newtitle
                 lastdetail=newdetail
-                if ignorelist(mqttignoretitle,newtitle):
+                if ignorelist(mqttignore,newtitle):
                     publish("title",newtitle,newdetail)
     if mqttprogress:
         publishprogress()
@@ -243,7 +242,7 @@ def startmqtt():
     if __addon__.getSetting("mqtttlsconnection")=='true' and  __addon__.getSetting("mqtttlsconnectioncrt")!='' and __addon__.getSetting("mqtttlsclient")=='false':
         mqc.tls_set(__addon__.getSetting("mqtttlsconnectioncrt"))
         xbmc.log("MQTT: TLS enabled, connecting using CA certificate: %s" % __addon__.getSetting("mqtttlsconnectioncrt"))
-    elif __addon__.getSetting("mqtttlsconnection")=='true' and  __addon__.getSetting("mqtttlsclient")=='true' and __addon__.getSetting("mqtttlsclientcrt")!='' and  __addon__.getSetting("mqtttlsclientkey")!='':    
+    elif __addon__.getSetting("mqtttlsconnection")=='true' and  __addon__.getSetting("mqtttlsclient")=='true' and __addon__.getSetting("mqtttlsclientcrt")!='' and  __addon__.getSetting("mqtttlsclientkey")!='':
         mqc.tls_set(__addon__.getSetting("mqtttlsconnectioncrt"), __addon__.getSetting("mqtttlsclientcrt"), __addon__.getSetting("mqtttlsclientkey"))
         xbmc.log("MQTT: TLS with client certificates enabled, connecting using certificates CA: %s, client %s and key: %s" % (__addon__.getSetting("mqttusername"), __addon__.getSetting("mqtttlsclientcrt"), __addon__.getSetting("mqtttlsclientkey")))
     topic=__addon__.getSetting("mqtttopic")

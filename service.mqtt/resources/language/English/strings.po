@@ -93,8 +93,5 @@ msgid "Publish details"
 msgstr ""
 
 msgctxt "#30205"
-msgid "Ignore words in title (comma separated)"
+msgid "Ignore words (comma separated)"
 msgstr ""
-
-msgctxt "#30206"
-msgid "Ignore words in path (comma separated)"
