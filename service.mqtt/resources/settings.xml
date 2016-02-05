@@ -4,11 +4,17 @@
         <setting label="30011" type="text" id="mqtthost" default="127.0.0.1"/>
         <setting label="30012" type="number" id="mqttport" default="1883"/>
         <setting label="30013" type="text" id="mqtttopic" default="kodi/"/>
+        <setting label="30014" type="bool" id="mqttdebug" default="false"/>
     </category>
     <category label="30100">
-        <setting label="30101" type="bool"   id="mqttanonymousconnection" default="true" />
-        <setting label="30102" type="text"   id="mqttusername" default="" visible="eq(-1,false)" />
-        <setting label="30103" type="text"   id="mqttpassword" option="hidden" default="" visible="eq(-2,false)" />
+        <setting label="30101" type="bool" id="mqttanonymousconnection" default="true" />
+        <setting label="30102" type="text" id="mqttusername" default="" visible="eq(-1,false)" />
+        <setting label="30103" type="text" id="mqttpassword" option="hidden" default="" visible="eq(-2,false)" />
+        <setting label="30104" type="bool" id="mqtttlsconnection" default="false" />
+        <setting label="30105" type="file" id="mqtttlsconnectioncrt" value="" default="" visible="eq(-1,true)" subsetting="true" />
+        <setting label="30106" type="bool" id="mqtttlsclient" default="false" visible="eq(-2,true)" />
+        <setting label="30107" type="file" id="mqtttlsclientcrt" value="" default="" visible="eq(-3,true) + eq(-1,true)" subsetting="true" />
+        <setting label="30108" type="file" id="mqtttlsclientkey" value="" default="" visible="eq(-4,true) + eq(-2,true)" subsetting="true" />
     </category>
     <category label="30200">
         <setting label="30201" type="number" id="mqttretry" default="5"/>

@@ -33,9 +33,13 @@ def ignorelist(data,val):
         val=xbmc.Player().getPlayingFile()
     return all(val.lower().find (v.strip()) <= -1 for v in data)
 
+def mqttlogging(log):
+    if  __addon__.getSetting("mqttdebug")=='true':
+        xbmc.log(log)
+
 def sendrpc(method,params):
     res=xbmc.executeJSONRPC(json.dumps({"jsonrpc":"2.0","method":method,"params":params,"id":1}))
-    xbmc.log("MQTT: JSON-RPC call "+method+" returned "+res)
+    mqttlogging("MQTT: JSON-RPC call "+method+" returned "+res)
     return json.loads(res)
 
 #
@@ -51,7 +55,7 @@ def publish(suffix,val,more):
         robj.update(more)
     jsonstr=json.dumps(robj)
     fulltopic=topic+"status/"+suffix
-    xbmc.log("MQTT: Publishing @"+fulltopic+": "+jsonstr)
+    mqttlogging("MQTT: Publishing @"+fulltopic+": "+jsonstr)
     mqc.publish(fulltopic,jsonstr,qos=0,retain=True)
 
 #
@@ -122,7 +126,7 @@ def publishdetails():
 class MQTTMonitor(xbmc.Monitor):
     def onSettingsChanged(self):
         global mqc
-        xbmc.log("MQTT: Settings changed, reconnecting broker")
+        mqttlogging("MQTT: Settings changed, reconnecting broker")
         mqc.loop_stop(True)
         startmqtt()
 
@@ -156,7 +160,7 @@ class MQTTPlayer(xbmc.Player):
         setplaystate(1,"speed")
 
     def onQueueNextItem():
-        xbmc.log("MQTT onqn");
+        mqttlogging("MQTT onqn");
 
 #
 # Handles commands
@@ -198,7 +202,7 @@ def processcommand(topic,data):
     elif topic=="playbackstate":
         processplaybackstate(data)
     else:
-        xbmc.log("MQTT: Unknown command "+topic)
+        mqttlogging("MQTT: Unknown command "+topic)
 
 #
 # Handles incoming MQTT messages
@@ -212,14 +216,14 @@ def msghandler(mqc,userdata,msg):
         if mytopic.startswith("command/"):
             processcommand(mytopic[8:],msg.payload)
     except Exception as e:
-        xbmc.log("MQTT: Error processing message %s: %s" % (type(e).__name__,e))
+        mqttlogging("MQTT: Error processing message %s: %s" % (type(e).__name__,e))
 
 def connecthandler(mqc,userdata,rc):
-    xbmc.log("MQTT: Connected to MQTT broker with rc=%d" % (rc))
+    mqttlogging("MQTT: Connected to MQTT broker with rc=%d" % (rc))
     mqc.subscribe(topic+"command/#",qos=0)
 
 def disconnecthandler(mqc,userdata,rc):
-    xbmc.log("MQTT: Disconnected from MQTT broker with rc=%d" % (rc))
+    mqttlogging("MQTT: Disconnected from MQTT broker with rc=%d" % (rc))
     time.sleep(5)
     mqc.reconnect()
 
@@ -233,14 +237,21 @@ def startmqtt():
     mqc.on_message=msghandler
     mqc.on_connect=connecthandler
     mqc.on_disconnect=disconnecthandler
-    if getSetting("mqttanonymousconnection")=='false':
-        mqc.username_pw_set(getSetting("mqttusername"), __addon__.getSetting("mqttpassword"))
-    topic=getSetting("mqtttopic")
+    if __addon__.getSetting("mqttanonymousconnection")=='false':
+        mqc.username_pw_set(__addon__.getSetting("mqttusername"), __addon__.getSetting("mqttpassword"))
+        xbmc.log("MQTT: Anonymous disabled, connecting as user: %s" % __addon__.getSetting("mqttusername"))
+    if __addon__.getSetting("mqtttlsconnection")=='true' and  __addon__.getSetting("mqtttlsconnectioncrt")!='' and __addon__.getSetting("mqtttlsclient")=='false':
+        mqc.tls_set(__addon__.getSetting("mqtttlsconnectioncrt"))
+        xbmc.log("MQTT: TLS enabled, connecting using CA certificate: %s" % __addon__.getSetting("mqtttlsconnectioncrt"))
+    elif __addon__.getSetting("mqtttlsconnection")=='true' and  __addon__.getSetting("mqtttlsclient")=='true' and __addon__.getSetting("mqtttlsclientcrt")!='' and  __addon__.getSetting("mqtttlsclientkey")!='':    
+        mqc.tls_set(__addon__.getSetting("mqtttlsconnectioncrt"), __addon__.getSetting("mqtttlsclientcrt"), __addon__.getSetting("mqtttlsclientkey"))
+        xbmc.log("MQTT: TLS with client certificates enabled, connecting using certificates CA: %s, client %s and key: %s" % (__addon__.getSetting("mqttusername"), __addon__.getSetting("mqtttlsclientcrt"), __addon__.getSetting("mqtttlsclientkey")))
+    topic=__addon__.getSetting("mqtttopic")
     if not topic.endswith("/"):
         topic+="/"
     mqc.will_set(topic+"connected",0,qos=2,retain=True)
-    xbmc.log("MQTT: Connecting to MQTT broker at %s:%s" % (getSetting("mqtthost"),getSetting("mqttport")))
-    mqc.connect(getSetting("mqtthost"),getSetting("mqttport"),60)
+    mqttlogging("MQTT: Connecting to MQTT broker at %s:%s" % (__addon__.getSetting("mqtthost"),__addon__.getSetting("mqttport")))
+    mqc.connect(__addon__.getSetting("mqtthost"),__addon__.getSetting("mqttport"),60)
     mqc.publish(topic+"connected",2,qos=1,retain=True)
     mqc.loop_start()
 
