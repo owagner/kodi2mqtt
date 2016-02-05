@@ -3,7 +3,7 @@
   <requires>
     <import addon="xbmc.python" version="2.19.0"/>
   </requires>
-  <extension point="xbmc.service" library="service.py" start="login" />  
+  <extension point="xbmc.service" library="service.py" start="login" />
   <extension point="xbmc.addon.metadata">
     <summary lang="en">MQTT Adapter, adhering to mqtt-smarthome specification</summary>
     <description lang="en">The addon is an adapter to a MQTT broker. It will publish information about what is playing, and provides remote control capability. It adheres to the mqtt-smarthome specification. </description>

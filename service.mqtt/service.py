@@ -5,15 +5,32 @@ import xbmc,xbmcaddon
 import json
 import threading
 import time
+import socket
 from lib import client as mqtt
 
 __addon__      = xbmcaddon.Addon()
 __version__    = __addon__.getAddonInfo('version')
 
+def getSetting(setting):
+    return __addon__.getSetting(setting).strip()
+
+mqttretry = int(getSetting("mqttretry"))
+mqttprogress = getSetting('mqttprogress').lower() == "true"
+mqttinterval = int(getSetting('mqttinterval'))
+mqttdetails = getSetting('mqttdetails').lower() == "true"
+mqttignore = getSetting('mqttignore').lower().split(',')
 activeplayerid=-1
 activeplayertype=""
 lasttitle=""
 lastdetail={}
+
+#
+# Returns true when no words are found, false on one or more matches
+#
+def ignorelist(data,val):
+    if val == "filepath":
+        val=xbmc.Player().getPlayingFile()
+    return all(val.lower().find (v.strip()) <= -1 for v in data)
 
 def mqttlogging(log):
     if  __addon__.getSetting("mqttdebug")=='true':
@@ -48,13 +65,16 @@ def setplaystate(state,detail):
     global activeplayerid,activeplayertype
     if state==1:
         res=sendrpc("Player.GetActivePlayers",{})
-        activeplayerid=res["result"][0]["playerid"]        
+        activeplayerid=res["result"][0]["playerid"]
         activeplayertype=res["result"][0]["type"]
-        res=sendrpc("Player.GetProperties",{"playerid":activeplayerid,"properties":["speed","currentsubtitle","currentaudiostream","repeat","subtitleenabled"]})
-        publish("playbackstate",state,{"kodi_state":detail,"kodi_playbackdetails":res["result"],"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype})
-        publishdetails()
+        if mqttdetails and ignorelist(mqttignore,"filepath"):
+            res=sendrpc("Player.GetProperties",{"playerid":activeplayerid,"properties":["speed","currentsubtitle","currentaudiostream","repeat","subtitleenabled"]})
+            publish("playbackstate",state,{"kodi_state":detail,"kodi_playbackdetails":res["result"],"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype,"kodi_timestamp":int(time.time())})
+            publishdetails()
+        else:
+            publish("playbackstate",state,{"kodi_state":detail,"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype,"kodi_timestamp":int(time.time())})
     else:
-        publish("playbackstate",state,{"kodi_state":detail,"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype})
+        publish("playbackstate",state,{"kodi_state":detail,"kodi_playerid":activeplayerid,"kodi_playertype":activeplayertype,"kodi_timestamp":int(time.time())})
 
 def convtime(ts):
     return("%02d:%02d:%02d" % (ts/3600,(ts/60)%60,ts%60))
@@ -80,20 +100,24 @@ def publishprogress():
 #
 # Publish more details about the currently playing item
 #
+
 def publishdetails():
     global player,activeplayerid
     global lasttitle,lastdetail
     if not player.isPlaying():
         return
-    res=sendrpc("Player.GetItem",{"playerid":activeplayerid,"properties":["title","streamdetails","file","thumbnail","fanart"]})
-    if "result" in res:
-        newtitle=res["result"]["item"]["title"]
-        newdetail={"kodi_details":res["result"]["item"]}
-        if newtitle!=lasttitle or newdetail!=lastdetail:
-            lasttitle=newtitle
-            lastdetail=newdetail
-            publish("title",newtitle,newdetail)
-    publishprogress()
+    if ignorelist(mqttignore,"filepath"):
+        res=sendrpc("Player.GetItem",{"playerid":activeplayerid,"properties":["title","streamdetails","file","thumbnail","fanart"]})
+        if "result" in res:
+            newtitle=res["result"]["item"]["title"]
+            newdetail={"kodi_details":res["result"]["item"]}
+            if newtitle!=lasttitle or newdetail!=lastdetail:
+                lasttitle=newtitle
+                lastdetail=newdetail
+                if ignorelist(mqttignore,newtitle):
+                    publish("title",newtitle,newdetail)
+    if mqttprogress:
+        publishprogress()
 
 #
 # Notification subclasses
@@ -106,6 +130,7 @@ class MQTTMonitor(xbmc.Monitor):
         startmqtt()
 
 class MQTTPlayer(xbmc.Player):
+
     def onPlayBackStarted(self):
         setplaystate(1,"started")
 
@@ -117,22 +142,22 @@ class MQTTPlayer(xbmc.Player):
 
     def onPlayBackEnded(self):
         setplaystate(0,"ended")
-        
+
     def onPlayBackStopped(self):
         setplaystate(0,"stopped")
-        
+
     def onPlayBackSeek(self):
         publishprogress()
-        
+
     def onPlayBackSeek(self):
         publishprogress()
-        
+
     def onPlayBackSeekChapter(self):
         publishprogress()
-    
+
     def onPlayBackSpeedChanged(speed):
         setplaystate(1,"speed")
-        
+
     def onQueueNextItem():
         mqttlogging("MQTT onqn");
 
@@ -166,7 +191,7 @@ def processplaybackstate(data):
     elif data=="next":
         player.playnext()
     elif data=="previous":
-        player.playprevious()        
+        player.playprevious()
 
 def processcommand(topic,data):
     if topic=="notify":
@@ -217,7 +242,7 @@ def startmqtt():
     if __addon__.getSetting("mqtttlsconnection")=='true' and  __addon__.getSetting("mqtttlsconnectioncrt")!='' and __addon__.getSetting("mqtttlsclient")=='false':
         mqc.tls_set(__addon__.getSetting("mqtttlsconnectioncrt"))
         xbmc.log("MQTT: TLS enabled, connecting using CA certificate: %s" % __addon__.getSetting("mqtttlsconnectioncrt"))
-    elif __addon__.getSetting("mqtttlsconnection")=='true' and  __addon__.getSetting("mqtttlsclient")=='true' and __addon__.getSetting("mqtttlsclientcrt")!='' and  __addon__.getSetting("mqtttlsclientkey")!='':    
+    elif __addon__.getSetting("mqtttlsconnection")=='true' and  __addon__.getSetting("mqtttlsclient")=='true' and __addon__.getSetting("mqtttlsclientcrt")!='' and  __addon__.getSetting("mqtttlsclientkey")!='':
         mqc.tls_set(__addon__.getSetting("mqtttlsconnectioncrt"), __addon__.getSetting("mqtttlsclientcrt"), __addon__.getSetting("mqtttlsclientkey"))
         xbmc.log("MQTT: TLS with client certificates enabled, connecting using certificates CA: %s, client %s and key: %s" % (__addon__.getSetting("mqttusername"), __addon__.getSetting("mqtttlsclientcrt"), __addon__.getSetting("mqtttlsclientkey")))
     topic=__addon__.getSetting("mqtttopic")
@@ -237,8 +262,18 @@ if (__name__ == "__main__"):
     xbmc.log('MQTT: MQTT Adapter Version %s started' % __version__)
     monitor=MQTTMonitor()
     player=MQTTPlayer()
-    startmqtt()
-    while not monitor.waitForAbort(20):
-        publishdetails()
+    for attempt in range(mqttretry):
+        try:
+            startmqtt()
+        except socket.error:
+            xbmc.log("MQTT: Socket error raised, retrying..")
+            time.sleep(5)
+        else:
+            break
+    else:
+        xbmc.log("MQTT: No connection possible, giving up.")
+        mqc.loop_stop(True)
+    while not monitor.waitForAbort(mqttinterval):
+        if mqttprogress:
+            publishprogress()
     mqc.loop_stop(True)
-    

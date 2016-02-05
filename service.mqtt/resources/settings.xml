@@ -16,4 +16,11 @@
         <setting label="30107" type="file" id="mqtttlsclientcrt" value="" default="" visible="eq(-3,true) + eq(-1,true)" subsetting="true" />
         <setting label="30108" type="file" id="mqtttlsclientkey" value="" default="" visible="eq(-4,true) + eq(-2,true)" subsetting="true" />
     </category>
+    <category label="30200">
+        <setting label="30201" type="number" id="mqttretry" default="5"/>
+        <setting label="30202" type="bool" id="mqttprogress" default="true"/>
+        <setting label="30203" type="text" id="mqttinterval" default="20" visible="eq(-1,true)"/>
+        <setting label="30204" type="bool" id="mqttdetails" default="true"/>
+        <setting label="30205" type="text" id="mqttignore" default="" visible="eq(-1,true)"/>
+    </category>
 </settings>
