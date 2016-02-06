@@ -272,13 +272,13 @@ if (__name__ == "__main__"):
         try:
             startmqtt()
         except socket.error:
-            xbmc.log("MQTT: Socket error raised, retrying..")
+            mqttlogging("MQTT: Socket error raised, retrying..")
             retries+=1
             time.sleep(5)
         else:
             break
     else:
-        xbmc.log("MQTT: No connection possible, giving up.")
+        mqttlogging("MQTT: No connection possible, giving up.")
         mqc.loop_stop(True)
 
     while not monitor.waitForAbort(mqttinterval):
