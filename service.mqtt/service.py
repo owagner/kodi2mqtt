@@ -15,8 +15,7 @@ def getSetting(setting):
     return __addon__.getSetting(setting).strip()
 
 def load_settings():
-    global mqttretry,mqttprogress,mqttinterval,mqttdetails,mqttignore
-    mqttretry = int(getSetting("mqttretry"))
+    global mqttprogress,mqttinterval,mqttdetails,mqttignore
     mqttprogress = getSetting('mqttprogress').lower() == "true"
     mqttinterval = int(getSetting('mqttinterval'))
     mqttdetails = getSetting('mqttdetails').lower() == "true"
