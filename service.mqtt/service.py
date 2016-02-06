@@ -19,7 +19,9 @@ def load_settings():
     mqttprogress = getSetting('mqttprogress').lower() == "true"
     mqttinterval = int(getSetting('mqttinterval'))
     mqttdetails = getSetting('mqttdetails').lower() == "true"
-    mqttignore = getSetting('mqttignore').lower().split(',')
+    mqttignore = getSetting('mqttignore')
+    if mqttignore:
+        mqttignore = mqttignore.lower().split(',')
 
 activeplayerid=-1
 activeplayertype=""
