@@ -14,11 +14,14 @@ __version__    = __addon__.getAddonInfo('version')
 def getSetting(setting):
     return __addon__.getSetting(setting).strip()
 
-mqttretry = int(getSetting("mqttretry"))
-mqttprogress = getSetting('mqttprogress').lower() == "true"
-mqttinterval = int(getSetting('mqttinterval'))
-mqttdetails = getSetting('mqttdetails').lower() == "true"
-mqttignore = getSetting('mqttignore').lower().split(',')
+def load_settings():
+    global mqttretry,mqttprogress,mqttinterval,mqttdetails,mqttignore
+    mqttretry = int(getSetting("mqttretry"))
+    mqttprogress = getSetting('mqttprogress').lower() == "true"
+    mqttinterval = int(getSetting('mqttinterval'))
+    mqttdetails = getSetting('mqttdetails').lower() == "true"
+    mqttignore = getSetting('mqttignore').lower().split(',')
+
 activeplayerid=-1
 activeplayertype=""
 lasttitle=""
@@ -95,7 +98,7 @@ def publishprogress():
     else:
         progress=0
     state={"kodi_time":convtime(pt),"kodi_totaltime":convtime(tt)}
-    publish("progress",round(progress,1),state)
+    publish("progress","%.1f" % progress,state)
 
 #
 # Publish more details about the currently playing item
@@ -127,6 +130,7 @@ class MQTTMonitor(xbmc.Monitor):
         global mqc
         mqttlogging("MQTT: Settings changed, reconnecting broker")
         mqc.loop_stop(True)
+        load_settings()
         startmqtt()
 
 class MQTTPlayer(xbmc.Player):
@@ -260,6 +264,7 @@ def startmqtt():
 if (__name__ == "__main__"):
     global monitor,player
     xbmc.log('MQTT: MQTT Adapter Version %s started' % __version__)
+    load_settings()
     monitor=MQTTMonitor()
     player=MQTTPlayer()
     for attempt in range(mqttretry):
