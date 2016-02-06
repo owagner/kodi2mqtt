@@ -267,17 +267,21 @@ if (__name__ == "__main__"):
     load_settings()
     monitor=MQTTMonitor()
     player=MQTTPlayer()
-    for attempt in range(mqttretry):
+    retries=0
+
+    for attempt in range(retries,20):
         try:
             startmqtt()
         except socket.error:
             xbmc.log("MQTT: Socket error raised, retrying..")
+            retries+=1
             time.sleep(5)
         else:
             break
     else:
         xbmc.log("MQTT: No connection possible, giving up.")
         mqc.loop_stop(True)
+
     while not monitor.waitForAbort(mqttinterval):
         if mqttprogress:
             publishprogress()
