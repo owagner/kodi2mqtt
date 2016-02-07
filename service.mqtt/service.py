@@ -243,47 +243,51 @@ def startmqtt():
     mqc.on_disconnect=disconnecthandler
     if __addon__.getSetting("mqttanonymousconnection")=='false':
         mqc.username_pw_set(__addon__.getSetting("mqttusername"), __addon__.getSetting("mqttpassword"))
-        xbmc.log("MQTT: Anonymous disabled, connecting as user: %s" % __addon__.getSetting("mqttusername"))
+        mqttlogging("MQTT: Anonymous disabled, connecting as user: %s" % __addon__.getSetting("mqttusername"))
     if __addon__.getSetting("mqtttlsconnection")=='true' and  __addon__.getSetting("mqtttlsconnectioncrt")!='' and __addon__.getSetting("mqtttlsclient")=='false':
         mqc.tls_set(__addon__.getSetting("mqtttlsconnectioncrt"))
-        xbmc.log("MQTT: TLS enabled, connecting using CA certificate: %s" % __addon__.getSetting("mqtttlsconnectioncrt"))
+        mqttlogging("MQTT: TLS enabled, connecting using CA certificate: %s" % __addon__.getSetting("mqtttlsconnectioncrt"))
     elif __addon__.getSetting("mqtttlsconnection")=='true' and  __addon__.getSetting("mqtttlsclient")=='true' and __addon__.getSetting("mqtttlsclientcrt")!='' and  __addon__.getSetting("mqtttlsclientkey")!='':
         mqc.tls_set(__addon__.getSetting("mqtttlsconnectioncrt"), __addon__.getSetting("mqtttlsclientcrt"), __addon__.getSetting("mqtttlsclientkey"))
-        xbmc.log("MQTT: TLS with client certificates enabled, connecting using certificates CA: %s, client %s and key: %s" % (__addon__.getSetting("mqttusername"), __addon__.getSetting("mqtttlsclientcrt"), __addon__.getSetting("mqtttlsclientkey")))
+        mqttlogging("MQTT: TLS with client certificates enabled, connecting using certificates CA: %s, client %s and key: %s" % (__addon__.getSetting("mqttusername"), __addon__.getSetting("mqtttlsclientcrt"), __addon__.getSetting("mqtttlsclientkey")))
     topic=__addon__.getSetting("mqtttopic")
     if not topic.endswith("/"):
         topic+="/"
     mqc.will_set(topic+"connected",0,qos=2,retain=True)
-    mqttlogging("MQTT: Connecting to MQTT broker at %s:%s" % (__addon__.getSetting("mqtthost"),__addon__.getSetting("mqttport")))
-    mqc.connect(__addon__.getSetting("mqtthost"),__addon__.getSetting("mqttport"),60)
+    sleep=2
+    for attempt in range(10):
+        try:
+            mqttlogging("MQTT: Connecting to MQTT broker at %s:%s" % (__addon__.getSetting("mqtthost"),__addon__.getSetting("mqttport")))
+            mqc.connect(__addon__.getSetting("mqtthost"),__addon__.getSetting("mqttport"),60)
+        except socket.error:
+            mqttlogging("MQTT: Socket error raised, retry in %d seconds" % sleep)
+            monitor.waitForAbort(sleep)
+            sleep=sleep*2
+        else:
+            break
+    else:
+        mqttlogging("MQTT: No connection possible, giving up")
+        return(False)
     mqc.publish(topic+"connected",2,qos=1,retain=True)
     mqc.loop_start()
+    return(True)
 
 #
 # Addon initialization and shutdown
 #
 if (__name__ == "__main__"):
     global monitor,player
-    xbmc.log('MQTT: MQTT Adapter Version %s started' % __version__)
+    mqttlogging('MQTT: MQTT Adapter Version %s started' % __version__)
     load_settings()
     monitor=MQTTMonitor()
-    player=MQTTPlayer()
-    retries=0
-
-    for attempt in range(retries,20):
-        try:
-            startmqtt()
-        except socket.error:
-            mqttlogging("MQTT: Socket error raised, retrying..")
-            retries+=1
-            time.sleep(5)
-        else:
-            break
-    else:
-        mqttlogging("MQTT: No connection possible, giving up.")
-        mqc.loop_stop(True)
-
-    while not monitor.waitForAbort(mqttinterval):
+    if startmqtt():
+        player=MQTTPlayer()
         if mqttprogress:
-            publishprogress()
-    mqc.loop_stop(True)
+            mqttlogging("MQTT: Progress Publishing enabled, interval is set to %d seconds" % mqttinterval)
+            while not monitor.waitForAbort(mqttinterval):
+                publishprogress()
+        else:
+            mqttlogging("MQTT: Progress Publishing disabled, waiting for abort")
+            monitor.waitForAbort()
+        mqc.loop_stop(True)
+    mqttlogging("MQTT: Shutting down")
