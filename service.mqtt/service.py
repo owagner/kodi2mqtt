@@ -139,7 +139,7 @@ def processnotify(data):
     try:
         params=json.loads(data)
     except ValueError:
-        parts=data.split(None,2)
+        parts = data.split(None, 1)
         params={"title":parts[0],"message":parts[1]}
     sendrpc("GUI.ShowNotification",params)
 
