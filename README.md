@@ -1,7 +1,7 @@
 MQTT addon for Kodi
 ===================
 
-  Written and (C) 2015 Oliver Wagner <owagner@tellerulam.com> 
+  Written and (C) 2015-16 Oliver Wagner <owagner@tellerulam.com> 
   
   Provided under the terms of the MIT license.
 
@@ -78,5 +78,5 @@ See also
   
 Changelog
 ---------
-Please see service.mqtt/changelog.txt for the change log
+Please see [service.mqtt/changelog.txt](service.mqtt/changelog.txt) for the change log
   
