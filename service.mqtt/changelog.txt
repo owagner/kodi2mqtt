@@ -1,3 +1,13 @@
+v0.12 - 2016-02-022 - markferry
+  - fix non-JSON case for handling command/notify
+
+V0.11 - 2016-02-22 - jvandenbroek 
+  - optional ignore list to prevent certain content to be published as being
+    played back by a word match on title and/or path
+  - configurable push frequencies for details and progress
+  - automatically retry MQTT connections up to 20 times
+  - various minor fixes
+
 v0.10 - 2016-01-30 - 2Zero
   - added TLS parameters to settings
   - noisy logging now optional via "Debug" settings switch
