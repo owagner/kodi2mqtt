@@ -1,6 +1,7 @@
 language: python
 
 script: "echo Nothing to do"
+install: true
 
 before_deploy: "zip -r mqtt_addon.zip service.mqtt"
 
