@@ -77,21 +77,17 @@ msgid "Advanced"
 msgstr ""
 
 msgctxt "#30201"
-msgid "Reconnect retries"
-msgstr ""
-
-msgctxt "#30202"
 msgid "Publish progress"
 msgstr ""
 
-msgctxt "#30203"
+msgctxt "#30202"
 msgid "Progress interval (in seconds)"
 msgstr ""
 
-msgctxt "#30204"
+msgctxt "#30203"
 msgid "Publish details"
 msgstr ""
 
-msgctxt "#30205"
+msgctxt "#30204"
 msgid "Ignore words (comma separated)"
 msgstr ""
