@@ -72,6 +72,7 @@ The addon listens to the following topics (prefixed with the configured topic pr
 
 See also
 --------
+- kodi.tv forum thread: http://forum.kodi.tv/showthread.php?tid=222109
 - JSON-RPC API v6 in Kodi: http://kodi.wiki/view/JSON-RPC_API/v6
 - Project overview: https://github.com/mqtt-smarthome
   
