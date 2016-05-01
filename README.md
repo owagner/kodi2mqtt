@@ -18,7 +18,7 @@ See https://github.com/mqtt-smarthome for a rationale and architectural overview
 
 Dependencies
 ------------
-* Kodi 14 Helix (or newer)
+* Kodi 14 Helix (or newer). Tested with 16.1.
 * Eclipse Paho for Python - http://www.eclipse.org/paho/clients/python/
   (used for MQTT communication)
 
@@ -27,11 +27,14 @@ Dependencies
 
 Settings
 --------
-The addon has three settings:
+The addon has multiple settings:
 
 * the MQTT broker's host name or IP address (defaults to 127.0.0.1)
 * the MQTT broker's port. This defaults to 1883, which is the MQTT standard port for unencrypted connections.
 * the topic prefix which to use in all published and subscribed topics. Defaults to "kodi/".
+* MQTT authentication and TLS settings
+* update frequency intervals
+* keyword filtering on content details, to prevent certain kind of content to be e.g. displayed in a SmartHome visualization
 
 
 Topics
@@ -64,8 +67,9 @@ The addon listens to the following topics (prefixed with the configured topic pr
   to the Player.Open() JSON_RPC call
 * command/playbackstate: A simple string or numeric with the values:
   - "0" or "stop" to stop playback
-  - "1" or "resume" to resume playback (when paused)
+  - "1" or "resume" or "play" to resume playback (when paused or stopped)
   - "2" or "pause" to stop playback (when playing)
+  - "toggle" to toggle between play and pause
   - "next" to play the next track
   - "previous" to play the previous track
 

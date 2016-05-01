@@ -25,6 +25,7 @@ def load_settings():
 
 activeplayerid=-1
 activeplayertype=""
+playbackstate=0
 lasttitle=""
 lastdetail={}
 
@@ -66,7 +67,8 @@ def publish(suffix,val,more):
 # the state is "playing"
 #
 def setplaystate(state,detail):
-    global activeplayerid,activeplayertype
+    global activeplayerid,activeplayertype,playbackstate
+    playbackstate=state
     if state==1:
         res=sendrpc("Player.GetActivePlayers",{})
         activeplayerid=res["result"][0]["playerid"]
@@ -185,13 +187,19 @@ def processplay(data):
         player.play(data)
 
 def processplaybackstate(data):
+    global playbackstate
     if data=="0" or data=="stop":
         player.stop()
-    elif data=="1" or data=="resume":
-        if not player.isPlaying():
+    elif data=="1" or data=="resume" or data=="play":
+        if playbackstate==2:
             player.pause()
+        elif playbackstate!=1:
+            player.play()
     elif data=="2" or data=="pause":
-        if player.isPlaying():
+    	if playbackstate==1:
+            player.pause()
+    elif data=="toggle":
+    	if playbackstate==1 or playbackstate==2:
             player.pause()
     elif data=="next":
         player.playnext()

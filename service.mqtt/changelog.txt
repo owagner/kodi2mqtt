@@ -1,3 +1,12 @@
+v0.13 - 2016-05-01 - owagner
+  - change logic for command/playbackstate:
+     - resume/play/1 will now properly resume when pausing, and attempt to
+       start play when playback has endeded. Fixes #17
+     - pause/2 will now only pause if the player is actually playing.
+       It can no longer be used to toggle pause mode.
+     - toggle (new) will now toggle pause mode, similarily to how "pause"
+       did before
+
 v0.12 - 2016-02-022 - markferry
   - fix non-JSON case for handling command/notify
 
